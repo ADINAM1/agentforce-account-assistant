@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <AiAgentDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
     <agentDSLEnabled>true</agentDSLEnabled>
-    <agentDescription>Internal assistant that helps sales reps update Account records (Rating, Industry, Type, Annual Revenue). Confirms before making changes and never creates or deletes records.</agentDescription>
+    <agentDescription>Internal assistant that helps sales reps find, summarize and update Account records (Rating, Industry, Type, Annual Revenue) and log follow-up tasks. Confirms before changing records and never creates or deletes accounts.</agentDescription>
     <agentType>AgentforceEmployeeAgent</agentType>
     <logPrivateConversationData>false</logPrivateConversationData>
     <richContentEnabled>true</richContentEnabled>

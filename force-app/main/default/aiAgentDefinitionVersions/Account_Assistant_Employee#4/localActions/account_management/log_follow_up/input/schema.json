@@ -1,0 +1,42 @@
+{
+  "required" : [ "accountId", "subject" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "accountId" : {
+      "title" : "Account Id",
+      "description" : "Salesforce Id of the Account (starts with 001): the record the user is viewing, or the accountId returned by Find Accounts.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "comments" : {
+      "title" : "Comments",
+      "description" : "Optional extra detail for the follow-up.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "dueDate" : {
+      "title" : "Due Date",
+      "description" : "Optional due date of the follow-up.",
+      "lightning:type" : "lightning__dateType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "priority" : {
+      "title" : "Priority",
+      "description" : "Optional priority. Allowed values: High, Normal, Low. Defaults to Normal.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "subject" : {
+      "title" : "Subject",
+      "description" : "Short summary of the follow-up, e.g. Send EU pricing proposal.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Flow xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>68.0</apiVersion>
+    <areMetricsLoggedToDataCloud>false</areMetricsLoggedToDataCloud>
+    <assignments>
+        <name>Set_Error_Message</name>
+        <label>Set Error Message</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>message</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>ErrorMessage</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
+        <name>Set_Not_Found_Message</name>
+        <label>Set Not Found Message</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>message</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <stringValue>I could not find that account, or you do not have access to it, so no follow-up was logged.</stringValue>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <assignments>
+        <name>Set_Success_Message</name>
+        <label>Set Success Message</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignmentItems>
+            <assignToReference>message</assignToReference>
+            <operator>Assign</operator>
+            <value>
+                <elementReference>SuccessMessage</elementReference>
+            </value>
+        </assignmentItems>
+    </assignments>
+    <decisions>
+        <name>Account_Found</name>
+        <label>Account Found?</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <defaultConnector>
+            <targetReference>Set_Not_Found_Message</targetReference>
+        </defaultConnector>
+        <defaultConnectorLabel>Not Found</defaultConnectorLabel>
+        <rules>
+            <name>Found</name>
+            <conditionLogic>and</conditionLogic>
+            <conditions>
+                <leftValueReference>Get_Account</leftValueReference>
+                <operator>IsNull</operator>
+                <rightValue>
+                    <booleanValue>false</booleanValue>
+                </rightValue>
+            </conditions>
+            <connector>
+                <targetReference>Create_Follow_Up_Task</targetReference>
+            </connector>
+            <label>Found</label>
+        </rules>
+    </decisions>
+    <description>Agent action for Account Assistant: logs a follow-up Task on an Account and returns a confirmation message the agent can relay. Runs in the context of the user talking to the agent.</description>
+    <environments>Default</environments>
+    <formulas>
+        <name>DueDateText</name>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!dueDate}), &quot;no due date&quot;, &quot;due &quot; &amp; TEXT({!dueDate}))</expression>
+    </formulas>
+    <formulas>
+        <name>TaskPriority</name>
+        <dataType>String</dataType>
+        <expression>IF(ISBLANK({!priority}), &quot;Normal&quot;, {!priority})</expression>
+    </formulas>
+    <interviewLabel>Log Account Follow-Up {!$Flow.CurrentDateTime}</interviewLabel>
+    <label>Log Account Follow-Up</label>
+    <processMetadataValues>
+        <name>BuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>CanvasMode</name>
+        <value>
+            <stringValue>AUTO_LAYOUT_CANVAS</stringValue>
+        </value>
+    </processMetadataValues>
+    <processMetadataValues>
+        <name>OriginBuilderType</name>
+        <value>
+            <stringValue>LightningFlowBuilder</stringValue>
+        </value>
+    </processMetadataValues>
+    <processType>AutoLaunchedFlow</processType>
+    <recordCreates>
+        <name>Create_Follow_Up_Task</name>
+        <label>Create Follow-Up Task</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignRecordIdToReference>taskId</assignRecordIdToReference>
+        <connector>
+            <targetReference>Set_Success_Message</targetReference>
+        </connector>
+        <faultConnector>
+            <targetReference>Set_Error_Message</targetReference>
+        </faultConnector>
+        <inputAssignments>
+            <field>ActivityDate</field>
+            <value>
+                <elementReference>dueDate</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Description</field>
+            <value>
+                <elementReference>comments</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Priority</field>
+            <value>
+                <elementReference>TaskPriority</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Status</field>
+            <value>
+                <stringValue>Not Started</stringValue>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>Subject</field>
+            <value>
+                <elementReference>subject</elementReference>
+            </value>
+        </inputAssignments>
+        <inputAssignments>
+            <field>WhatId</field>
+            <value>
+                <elementReference>Get_Account.Id</elementReference>
+            </value>
+        </inputAssignments>
+        <object>Task</object>
+    </recordCreates>
+    <recordLookups>
+        <name>Get_Account</name>
+        <label>Get Account</label>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <assignNullValuesIfNoRecordsFound>false</assignNullValuesIfNoRecordsFound>
+        <connector>
+            <targetReference>Account_Found</targetReference>
+        </connector>
+        <faultConnector>
+            <targetReference>Set_Error_Message</targetReference>
+        </faultConnector>
+        <filterLogic>and</filterLogic>
+        <filters>
+            <field>Id</field>
+            <operator>EqualTo</operator>
+            <value>
+                <elementReference>accountId</elementReference>
+            </value>
+        </filters>
+        <getFirstRecordOnly>true</getFirstRecordOnly>
+        <object>Account</object>
+        <queriedFields>Id</queriedFields>
+        <queriedFields>Name</queriedFields>
+        <storeOutputAutomatically>true</storeOutputAutomatically>
+    </recordLookups>
+    <start>
+        <locationX>0</locationX>
+        <locationY>0</locationY>
+        <connector>
+            <targetReference>Get_Account</targetReference>
+        </connector>
+    </start>
+    <status>Active</status>
+    <textTemplates>
+        <name>ErrorMessage</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>The follow-up could not be logged: {!$Flow.FaultMessage}</text>
+    </textTemplates>
+    <textTemplates>
+        <name>SuccessMessage</name>
+        <isViewedAsPlainText>true</isViewedAsPlainText>
+        <text>Logged follow-up &quot;{!subject}&quot; on {!Get_Account.Name} ({!DueDateText}, {!TaskPriority} priority).</text>
+    </textTemplates>
+    <variables>
+        <description>Id of the Account to log the follow-up on.</description>
+        <name>accountId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Optional extra detail, saved as the Task comments.</description>
+        <name>comments</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Optional due date of the follow-up.</description>
+        <name>dueDate</name>
+        <dataType>Date</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Result to relay to the user.</description>
+        <name>message</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+    <variables>
+        <description>Optional Task priority: High, Normal or Low. Defaults to Normal.</description>
+        <name>priority</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Short summary of the follow-up, saved as the Task subject.</description>
+        <name>subject</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>true</isInput>
+        <isOutput>false</isOutput>
+    </variables>
+    <variables>
+        <description>Id of the Task that was created.</description>
+        <name>taskId</name>
+        <dataType>String</dataType>
+        <isCollection>false</isCollection>
+        <isInput>false</isInput>
+        <isOutput>true</isOutput>
+    </variables>
+</Flow>

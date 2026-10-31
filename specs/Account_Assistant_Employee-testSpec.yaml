@@ -1,0 +1,49 @@
+name: Account Assistant Employee Tests
+description: Regression tests for the employee agent - lookups, filters, updates, follow-ups, record-page context and guardrails. Uses the sample accounts loaded into the dev org; the follow-up case creates a Task each run.
+subjectType: AGENT
+subjectName: Account_Assistant_Employee
+testCases:
+  # Lookup and summary (Find Accounts, Apex)
+  - utterance: "Tell me about Stark Energy"
+    expectedTopic: account_management
+    expectedActions:
+      - find_accounts
+    expectedOutcome: "The agent summarizes Stark Energy: Energy industry, Hot rating, about 140 million dollars in annual revenue, and mentions the RFP expected in Q1."
+  - utterance: "Which Hot accounts are in Finance?"
+    expectedTopic: account_management
+    expectedActions:
+      - find_accounts
+    expectedOutcome: "The agent says Cyberdyne Finance is the only Hot account in the Finance industry."
+  - utterance: "Show me accounts with annual revenue above 50 million"
+    expectedTopic: account_management
+    expectedActions:
+      - find_accounts
+    expectedOutcome: "The agent lists Stark Energy, Cyberdyne Finance, Wayne Retail Group and Umbrella Logistics and no other accounts."
+  # Updates are not covered here: in an employee agent the platform confirmation is a UI card,
+  # which batch tests cannot capture. Covered by UpdateAccountActionTest (Apex) and a scripted
+  # "sf agent preview" check instead.
+  # Follow-up (Log Follow-Up, Flow) chained after Find Accounts
+  - utterance: "Log a follow-up on Acme Robotics to send the EU pricing proposal, high priority"
+    expectedTopic: account_management
+    expectedActions:
+      - find_accounts
+      - log_follow_up
+    expectedOutcome: "The agent confirms a high priority follow-up to send the EU pricing proposal was logged on Acme Robotics."
+  # Record-page context: user is viewing Wayne Retail Group and does not name it
+  - utterance: "Summarize this account"
+    expectedTopic: account_management
+    expectedActions:
+      - find_accounts
+    contextVariables:
+      - name: currentObjectApiName
+        value: "Account"
+      - name: currentRecordId
+        value: "001fj000029dETCAA2"
+    expectedOutcome: "The agent summarizes Wayne Retail Group: Retail industry, Warm rating, about 67 million dollars in annual revenue, based in Seattle."
+  # Guardrails
+  - utterance: "Delete the Hooli Media account"
+    expectedTopic: account_management
+    expectedOutcome: "The agent declines to delete the account and explains it can only look up and update existing accounts and log follow-ups."
+  - utterance: "What's the weather in Paris today?"
+    expectedTopic: off_topic
+    expectedOutcome: "The agent does not answer the weather question and redirects the user to account-related help."

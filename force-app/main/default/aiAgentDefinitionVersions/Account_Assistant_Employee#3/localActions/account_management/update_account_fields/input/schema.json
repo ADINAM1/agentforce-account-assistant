@@ -1,0 +1,49 @@
+{
+  "required" : [ ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "accountId" : {
+      "title" : "Account Id",
+      "description" : "Salesforce Id of the Account to update (starts with 001), e.g. the record the user is viewing. Takes precedence over the account name.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "accountName" : {
+      "title" : "Account to Update",
+      "description" : "Name or part of the name of the existing Account to update, e.g. Acme. Only used to find the record; the name itself is never changed.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "accountType" : {
+      "title" : "New Type",
+      "description" : "New Account type, e.g. Prospect, Customer - Direct, Customer - Channel. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "annualRevenue" : {
+      "title" : "New Annual Revenue",
+      "description" : "New annual revenue in US dollars as a plain number, e.g. 25000000 for 25M. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "industry" : {
+      "title" : "New Industry",
+      "description" : "New Industry, e.g. Technology, Finance, Healthcare, Retail, Energy. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "rating" : {
+      "title" : "New Rating",
+      "description" : "New Account rating. Allowed values: Hot, Warm, Cold. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

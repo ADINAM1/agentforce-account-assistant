@@ -1,20 +1,29 @@
 system:
-    instructions: "You are Account Assistant, an internal AI agent that helps sales reps look up and update Salesforce Account records. Be concise and accurate."
+    instructions: "You are Account Assistant, an internal AI agent that helps sales reps look up, summarize and update Salesforce Account records and log follow-ups on them. Be concise and accurate."
     messages:
         welcome: |
-            Hi, I'm Account Assistant. I can update an account's Rating, Industry, Type or Annual Revenue. Which account are you working on?
+            Hi, I'm Account Assistant. I can look up and summarize accounts, update their Rating, Industry, Type or Annual Revenue, and log follow-up tasks. What are you working on?
         error: "Sorry, it looks like something has gone wrong."
 
 config:
     developer_name: "Account_Assistant_Employee"
     agent_type: "AgentforceEmployeeAgent"
     agent_label: "Account Assistant (Employee)"
-    description: "Internal assistant that helps sales reps update Account records (Rating, Industry, Type, Annual Revenue). Confirms before making changes and never creates or deletes records."
+    description: "Internal assistant that helps sales reps find, summarize and update Account records (Rating, Industry, Type, Annual Revenue) and log follow-up tasks. Confirms before changing records and never creates or deletes accounts."
 
 language:
     default_locale: "en_US"
     additional_locales: ""
     all_additional_locales: False
+
+variables:
+    # Filled in by the Lightning Agentforce panel with the record on the user's screen.
+    currentRecordId: mutable string = ""
+        visibility: "External"
+        description: "The ID of the record on the user's screen. It may not relate to the user's request. Only use it when the user says 'this account', 'this one', 'it' or 'the current record'."
+    currentObjectApiName: mutable string = ""
+        visibility: "External"
+        description: "The API name of the object of the record on the user's screen, such as Account."
 
 knowledge:
     rag_feature_config_id: ""
@@ -29,9 +38,11 @@ start_agent agent_router:
     reasoning:
         instructions: ->
             | Select the best tool to call based on conversation history and user's intent.
+            if @variables.currentObjectApiName == "Account":
+                | The user is viewing an Account record, so requests about "this account", "this one" or "it" are account requests.
         actions:
             go_to_account_management: @utils.transition to @subagent.account_management
-                description: "Use for any request to look up, change, set or update an Account's Rating, Industry, Type or Annual Revenue."
+                description: "Use for any request about Accounts: looking up or summarizing an account, finding or listing accounts by criteria, changing an account's Rating, Industry, Type or Annual Revenue, or logging a follow-up, note, call or reminder on an account."
             go_to_off_topic: @utils.transition to @subagent.off_topic
             go_to_ambiguous_question: @utils.transition to @subagent.ambiguous_question
 
@@ -80,25 +91,81 @@ subagent ambiguous_question:
 
 subagent account_management:
     label: "Account Management"
-    description: "Handles requests to change, set or update an existing Account's Rating, Industry, Type or Annual Revenue."
+    description: "Looks up, summarizes and searches Accounts, updates an Account's Rating, Industry, Type or Annual Revenue, and logs follow-up tasks on Accounts."
     actions:
+        find_accounts:
+            label: "Find Accounts"
+            description: "Finds Accounts by Id or name and/or by Rating, Industry, Type, billing state or annual revenue range. Returns a profile (including open opportunities and recent follow-ups) when one account matches, or a list when several match."
+            include_in_progress_indicator: True
+            progress_indicator_message: "Looking up accounts..."
+            inputs:
+                accountId: string
+                    label: "Account Id"
+                    description: "Salesforce Id of a specific Account (starts with 001), e.g. the record the user is viewing."
+                    is_required: False
+                accountName: string
+                    label: "Account Name"
+                    description: "Full or partial account name to search for, e.g. Acme."
+                    is_required: False
+                rating: string
+                    label: "Rating"
+                    description: "Only return accounts with this rating. Allowed values: Hot, Warm, Cold."
+                    is_required: False
+                industry: string
+                    label: "Industry"
+                    description: "Only return accounts in this industry, e.g. Finance, Technology, Healthcare, Retail, Energy."
+                    is_required: False
+                accountType: string
+                    label: "Type"
+                    description: "Only return accounts of this type, e.g. Prospect, Customer - Direct, Customer - Channel."
+                    is_required: False
+                billingState: string
+                    label: "Billing State"
+                    description: "Only return accounts billed in this US state, as the full state name, e.g. California."
+                    is_required: False
+                minAnnualRevenue: number
+                    label: "Minimum Annual Revenue"
+                    description: "Only return accounts with annual revenue at or above this amount in US dollars, e.g. 50000000 for 50M."
+                    is_required: False
+                maxAnnualRevenue: number
+                    label: "Maximum Annual Revenue"
+                    description: "Only return accounts with annual revenue at or below this amount in US dollars."
+                    is_required: False
+                maxResults: integer
+                    label: "Max Results"
+                    description: "Maximum number of accounts to return (default 10, at most 25)."
+                    is_required: False
+            outputs:
+                summary: string
+                    description: "Plain-text details of the matching accounts, or why none matched. Answer only from this."
+                matchCount: integer
+                    description: "Number of accounts returned."
+                accountId: string
+                    description: "Id of the account when exactly one matched; pass it to Log Follow-Up or Update Account Fields."
+            target: "apex://FindAccountsAction"
         update_account_fields:
-            description: "Updates the Rating, Industry, Type and/or Annual Revenue of a single existing Account identified by name."
+            label: "Update Account Fields"
+            description: "Updates the Rating, Industry, Type and/or Annual Revenue of a single existing Account identified by its Id."
             require_user_confirmation: True
             inputs:
-                accountName: string
-                    description: "The name or part of the name of the Account to update, e.g. Acme Robotics or Acme."
+                accountId: string
+                    label: "Account Id"
+                    description: "Salesforce Id of the Account to update (starts with 001): the record the user is viewing, or the accountId returned by Find Accounts."
                     is_required: True
                 rating: string
+                    label: "New Rating"
                     description: "New Account rating. Allowed values: Hot, Warm, Cold. Leave empty to keep the current value."
                     is_required: False
                 industry: string
+                    label: "New Industry"
                     description: "New Industry, e.g. Technology, Finance, Healthcare, Retail, Energy. Leave empty to keep the current value."
                     is_required: False
                 accountType: string
+                    label: "New Type"
                     description: "New Account type, e.g. Prospect, Customer - Direct, Customer - Channel. Leave empty to keep the current value."
                     is_required: False
                 annualRevenue: number
+                    label: "New Annual Revenue"
                     description: "New annual revenue in US dollars as a plain number, e.g. 25000000 for 25M. Leave empty to keep the current value."
                     is_required: False
             outputs:
@@ -106,22 +173,76 @@ subagent account_management:
                     description: "True if the Account was updated."
                 message: string
                     description: "Result to relay to the user, including what changed or why nothing changed."
-                    is_displayable: True
                 accountId: id
                     description: "Id of the updated Account, if exactly one matched."
             target: "apex://UpdateAccountAction"
+        log_follow_up:
+            label: "Log Follow-Up"
+            description: "Creates a follow-up Task on an Account, such as a call, email, meeting or reminder, with an optional due date, comments and priority."
+            include_in_progress_indicator: True
+            progress_indicator_message: "Logging the follow-up..."
+            inputs:
+                accountId: string
+                    label: "Account Id"
+                    description: "Salesforce Id of the Account (starts with 001): the record the user is viewing, or the accountId returned by Find Accounts."
+                    is_required: True
+                subject: string
+                    label: "Subject"
+                    description: "Short summary of the follow-up, e.g. Send EU pricing proposal."
+                    is_required: True
+                comments: string
+                    label: "Comments"
+                    description: "Optional extra detail for the follow-up."
+                    is_required: False
+                dueDate: date
+                    label: "Due Date"
+                    description: "Optional due date of the follow-up."
+                    is_required: False
+                priority: string
+                    label: "Priority"
+                    description: "Optional priority. Allowed values: High, Normal, Low. Defaults to Normal."
+                    is_required: False
+            outputs:
+                taskId: string
+                    description: "Id of the created Task."
+                message: string
+                    description: "Result to relay to the user, including the due date that was set or why the follow-up was not logged."
+            target: "flow://Log_Account_Follow_Up"
     reasoning:
         instructions: ->
-            | Help the user update one Account at a time.
-              Call {!@actions.update_account} as soon as you know the account and the change; the platform asks the user to confirm before it runs, so do not ask for confirmation yourself.
-              If the action reports that multiple accounts match, list them and ask which one the user meant.
+            if @variables.currentObjectApiName == "Account":
+                | The user is viewing the Account with Id {!@variables.currentRecordId}. When they say "this account", "this one" or "it", or don't name an account, pass this Id as accountId to the actions instead of a name.
+            | Help the user find, understand and update Accounts, and log follow-ups on them.
+              Answer questions about accounts only from {!@actions.find_accounts} results; never guess account details.
+              For a single account ("tell me about Acme"), give a short overview: industry, type, rating, revenue, location, what the notes say, open opportunities and the latest follow-ups.
+              For questions about several accounts ("which Hot accounts are in Finance?"), pass the criteria as filters to {!@actions.find_accounts} and answer with a short list.
+              Updates and follow-ups need the account's Id. Use the Id of the account the user is viewing; otherwise call {!@actions.find_accounts} with the account name first and use the accountId it returns when exactly one account matches. If several match, ask which one the user meant before doing anything else.
+              To change Rating, Industry, Type or Annual Revenue, call {!@actions.update_account} with the accountId and only the fields that change. The platform shows the user a confirmation card before it runs, so do not ask for confirmation yourself.
+              To log a follow-up, reminder, call, email or note, call {!@actions.log_follow_up} with the accountId. Convert relative due dates such as "next Friday" to a calendar date.
+              If an action reports that several accounts match, list them and ask which one the user meant.
               Never invent field values. If a value is rejected, show the user the allowed values from the action's message.
-              Never create or delete accounts. If asked to, explain that you can only update existing accounts.
-              Always tell the user the result using the message returned by the action.
+              Never create or delete accounts. If asked to, explain that you can only look up and update existing accounts and log follow-ups.
+              After an update or a logged follow-up, tell the user the result using the message returned by the action.
         actions:
-            update_account: @actions.update_account_fields
+            find_accounts: @actions.find_accounts
+                with accountId = ...
                 with accountName = ...
                 with rating = ...
                 with industry = ...
                 with accountType = ...
+                with billingState = ...
+                with minAnnualRevenue = ...
+                with maxAnnualRevenue = ...
+                with maxResults = ...
+            update_account: @actions.update_account_fields
+                with accountId = ...
+                with rating = ...
+                with industry = ...
+                with accountType = ...
                 with annualRevenue = ...
+            log_follow_up: @actions.log_follow_up
+                with accountId = ...
+                with subject = ...
+                with comments = ...
+                with dueDate = ...
+                with priority = ...

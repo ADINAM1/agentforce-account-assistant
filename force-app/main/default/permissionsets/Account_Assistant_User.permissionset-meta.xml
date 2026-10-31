@@ -1,10 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <PermissionSet xmlns="http://soap.sforce.com/2006/04/metadata">
-    <label>Account Assistant User</label>
-    <description>Lets employees chat with the Account Assistant agent in the Agentforce panel.</description>
-    <hasActivationRequired>false</hasActivationRequired>
     <agentAccesses>
         <agentName>Account_Assistant_Employee</agentName>
         <enabled>true</enabled>
     </agentAccesses>
+    <classAccesses>
+        <apexClass>FindAccountsAction</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <classAccesses>
+        <apexClass>UpdateAccountAction</apexClass>
+        <enabled>true</enabled>
+    </classAccesses>
+    <description>Lets employees use the Account Assistant agent in the Agentforce panel: agent access plus the Apex actions and Flow it calls. Record access still comes from each user's own profile and sharing.</description>
+    <flowAccesses>
+        <enabled>true</enabled>
+        <flow>Log_Account_Follow_Up</flow>
+    </flowAccesses>
+    <hasActivationRequired>false</hasActivationRequired>
+    <label>Account Assistant User</label>
 </PermissionSet>

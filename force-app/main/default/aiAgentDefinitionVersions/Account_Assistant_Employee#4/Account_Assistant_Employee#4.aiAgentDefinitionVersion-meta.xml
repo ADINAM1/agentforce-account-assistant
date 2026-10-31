@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AiAgentDefinitionVersion xmlns="http://soap.sforce.com/2006/04/metadata">
+    <articleAnswersGPTEnabled>false</articleAnswersGPTEnabled>
+    <billingMode>ActionBased</billingMode>
+    <citationsEnabled>false</citationsEnabled>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The agent instructions</description>
+        <developerName>AgentScriptInternal_agent_instructions</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Agent Instructions</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Boolean</dataType>
+        <description>Runtime condition evaluation for if statements</description>
+        <developerName>AgentScriptInternal_condition_1</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Runtime Condition 1</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The next topic to be visited</description>
+        <developerName>AgentScriptInternal_next_topic</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Next Topic</label>
+        <visibility>Internal</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The API name of the object of the record on the user&apos;s screen, such as Account.</description>
+        <developerName>currentObjectApiName</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Current Object Api Name</label>
+        <visibility>External</visibility>
+    </conversationVariables>
+    <conversationVariables>
+        <dataType>Text</dataType>
+        <description>The ID of the record on the user&apos;s screen. It may not relate to the user&apos;s request. Only use it when the user says &apos;this account&apos;, &apos;this one&apos;, &apos;it&apos; or &apos;the current record&apos;.</description>
+        <developerName>currentRecordId</developerName>
+        <includeInPrompt>false</includeInPrompt>
+        <label>Current Record Id</label>
+        <visibility>External</visibility>
+    </conversationVariables>
+    <copilotPrimaryLanguage>en_US</copilotPrimaryLanguage>
+    <genAiPlannerName>Account_Assistant_Employee_v4</genAiPlannerName>
+    <isScriptCompatibleAgent>true</isScriptCompatibleAgent>
+    <knowledgeActionEnabled>false</knowledgeActionEnabled>
+    <knowledgeFallbackEnabled>false</knowledgeFallbackEnabled>
+    <planner>
+        <fullName>Account_Assistant_Employee_v4</fullName>
+        <agentGraphRef>20Zfj00000BKVm5</agentGraphRef>
+        <description>Internal assistant that helps sales reps find, summarize and update Account records (Rating, Industry, Type, Annual Revenue) and log follow-up tasks. Confirms before changing records and never creates or deletes accounts.</description>
+        <localTopicLinks>
+            <genAiPluginName>account_management</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>agent_router</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>ambiguous_question</genAiPluginName>
+        </localTopicLinks>
+        <localTopicLinks>
+            <genAiPluginName>off_topic</genAiPluginName>
+        </localTopicLinks>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Looks up, summarizes and searches Accounts, updates an Account&apos;s Rating, Industry, Type or Annual Revenue, and logs follow-up tasks on Accounts.</description>
+            <genAiPluginInstructions>
+                <description>You are Account Assistant, an internal AI agent that helps sales reps look up, summarize and update Salesforce Account records and log follow-ups on them. Be concise and accurate.</description>
+                <developerName>instruction0_179fj000004eiXu</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179fj000004eiXu</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localActionLinks>
+                <functionName>log_follow_up</functionName>
+            </localActionLinks>
+            <localActionLinks>
+                <functionName>update_account_fields</functionName>
+            </localActionLinks>
+            <localActionLinks>
+                <functionName>find_accounts</functionName>
+            </localActionLinks>
+            <localActions>
+                <description>Finds Accounts by Id or name and/or by Rating, Industry, Type, billing state or annual revenue range. Returns a profile (including open opportunities and recent follow-ups) when one account matches, or a list when several match.</description>
+                <invocationTarget>FindAccountsAction</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+                <localDeveloperName>find_accounts</localDeveloperName>
+                <masterLabel>Find Accounts</masterLabel>
+                <progressIndicatorMessage>Looking up accounts...</progressIndicatorMessage>
+            </localActions>
+            <localActions>
+                <description>Creates a follow-up Task on an Account, such as a call, email, meeting or reminder, with an optional due date, comments and priority.</description>
+                <invocationTarget>Log_Account_Follow_Up</invocationTarget>
+                <invocationTargetType>flow</invocationTargetType>
+                <isConfirmationRequired>false</isConfirmationRequired>
+                <isIncludeInProgressIndicator>true</isIncludeInProgressIndicator>
+                <localDeveloperName>log_follow_up</localDeveloperName>
+                <masterLabel>Log Follow-Up</masterLabel>
+                <progressIndicatorMessage>Logging the follow-up...</progressIndicatorMessage>
+            </localActions>
+            <localActions>
+                <description>Updates the Rating, Industry, Type and/or Annual Revenue of a single existing Account identified by its Id.</description>
+                <invocationTarget>UpdateAccountAction</invocationTarget>
+                <invocationTargetType>apex</invocationTargetType>
+                <isConfirmationRequired>true</isConfirmationRequired>
+                <isIncludeInProgressIndicator>false</isIncludeInProgressIndicator>
+                <localDeveloperName>update_account_fields</localDeveloperName>
+                <masterLabel>Update Account Fields</masterLabel>
+            </localActions>
+            <localDeveloperName>account_management</localDeveloperName>
+            <masterLabel>Account Management</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Welcome the user and determine the appropriate subagent based on user input</description>
+            <genAiPluginInstructions>
+                <description>You are Account Assistant, an internal AI agent that helps sales reps look up, summarize and update Salesforce Account records and log follow-ups on them. Be concise and accurate.
+
+{{state.AgentScriptInternal_agent_instructions}}</description>
+                <developerName>instruction0_179fj000004eiXw</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179fj000004eiXw</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localDeveloperName>agent_router</localDeveloperName>
+            <masterLabel>Agent Router</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Redirect conversation to relevant topics when user request is too ambiguous</description>
+            <genAiPluginInstructions>
+                <description>You are Account Assistant, an internal AI agent that helps sales reps look up, summarize and update Salesforce Account records and log follow-ups on them. Be concise and accurate.</description>
+                <developerName>instruction0_179fj000004eiXt</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179fj000004eiXt</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localDeveloperName>ambiguous_question</localDeveloperName>
+            <masterLabel>Ambiguous Question</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <localTopics>
+            <canEscalate>false</canEscalate>
+            <description>Redirect conversation to relevant topics when user request goes off-topic</description>
+            <genAiPluginInstructions>
+                <description>You are Account Assistant, an internal AI agent that helps sales reps look up, summarize and update Salesforce Account records and log follow-ups on them. Be concise and accurate.</description>
+                <developerName>instruction0_179fj000004eiXv</developerName>
+                <language>en_US</language>
+                <masterLabel>instruction0_179fj000004eiXv</masterLabel>
+                <sortOrder>1</sortOrder>
+            </genAiPluginInstructions>
+            <language>en_US</language>
+            <localDeveloperName>off_topic</localDeveloperName>
+            <masterLabel>Off Topic</masterLabel>
+            <pluginType>Topic</pluginType>
+        </localTopics>
+        <masterLabel>Account Assistant (Employee)</masterLabel>
+        <plannerType>Atlas__ConcurrentMultiAgentOrchestration</plannerType>
+    </planner>
+    <smallTalkEnabled>false</smallTalkEnabled>
+    <staticPromptsEnabled>false</staticPromptsEnabled>
+    <status>Inactive</status>
+    <stopRecPrompts>false</stopRecPrompts>
+    <surfacesEnabled>false</surfacesEnabled>
+    <toneType>Casual</toneType>
+    <version>4</version>
+    <welcomeMessage>Hi, I&apos;m Account Assistant. I can look up and summarize accounts, update their Rating, Industry, Type or Annual Revenue, and log follow-up tasks. What are you working on?</welcomeMessage>
+</AiAgentDefinitionVersion>

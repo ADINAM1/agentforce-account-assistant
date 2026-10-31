@@ -1,0 +1,70 @@
+{
+  "required" : [ ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "accountId" : {
+      "title" : "Account Id",
+      "description" : "Salesforce Id of a specific Account (starts with 001), e.g. the record the user is viewing.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "accountName" : {
+      "title" : "Account Name",
+      "description" : "Full or partial account name to search for, e.g. Acme.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "accountType" : {
+      "title" : "Type",
+      "description" : "Only return accounts of this type, e.g. Prospect, Customer - Direct, Customer - Channel.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "billingState" : {
+      "title" : "Billing State",
+      "description" : "Only return accounts billed in this US state, as the full state name, e.g. California.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "industry" : {
+      "title" : "Industry",
+      "description" : "Only return accounts in this industry, e.g. Finance, Technology, Healthcare, Retail, Energy.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "maxAnnualRevenue" : {
+      "title" : "Maximum Annual Revenue",
+      "description" : "Only return accounts with annual revenue at or below this amount in US dollars.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "maxResults" : {
+      "title" : "Max Results",
+      "description" : "Maximum number of accounts to return (default 10, at most 25).",
+      "lightning:type" : "lightning__integerType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "minAnnualRevenue" : {
+      "title" : "Minimum Annual Revenue",
+      "description" : "Only return accounts with annual revenue at or above this amount in US dollars, e.g. 50000000 for 50M.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "rating" : {
+      "title" : "Rating",
+      "description" : "Only return accounts with this rating. Allowed values: Hot, Warm, Cold.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

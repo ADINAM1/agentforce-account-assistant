@@ -84,6 +84,69 @@ private class UpdateAccountActionTest {
     }
 
     @IsTest
+    static void updatesByAccountIdWithoutName() {
+        Account target = [SELECT Id FROM Account WHERE Name = 'Test Robotics'];
+        UpdateAccountAction.Request req = new UpdateAccountAction.Request();
+        req.accountId = target.Id;
+        req.rating = 'Warm';
+
+        UpdateAccountAction.Response res = run(req);
+
+        Assert.isTrue(res.success, res.message);
+        Assert.areEqual(target.Id, res.accountId);
+        Assert.areEqual('Warm', [SELECT Rating FROM Account WHERE Id = :target.Id].Rating);
+    }
+
+    @IsTest
+    static void accountIdTakesPrecedenceOverName() {
+        Account target = [SELECT Id FROM Account WHERE Name = 'Test Robotics'];
+        UpdateAccountAction.Request req = new UpdateAccountAction.Request();
+        req.accountId = target.Id;
+        req.accountName = 'Test Health';
+        req.rating = 'Hot';
+
+        UpdateAccountAction.Response res = run(req);
+
+        Assert.isTrue(res.success, 'An Id should resolve the account without a name lookup: ' + res.message);
+        Assert.areEqual(target.Id, res.accountId);
+    }
+
+    @IsTest
+    static void rejectsIdThatIsNotAnAccount() {
+        UpdateAccountAction.Request req = new UpdateAccountAction.Request();
+        req.accountId = UserInfo.getUserId();
+        req.rating = 'Hot';
+
+        UpdateAccountAction.Response res = run(req);
+
+        Assert.isFalse(res.success);
+        Assert.isTrue(res.message.contains('is not an Account Id'), res.message);
+    }
+
+    @IsTest
+    static void fallsBackToNameWhenIdIsNotAnAccount() {
+        UpdateAccountAction.Request req = new UpdateAccountAction.Request();
+        req.accountId = UserInfo.getUserId();
+        req.accountName = 'Test Robotics';
+        req.rating = 'Hot';
+
+        UpdateAccountAction.Response res = run(req);
+
+        Assert.isTrue(res.success, res.message);
+    }
+
+    @IsTest
+    static void asksWhichAccountWhenNoneGiven() {
+        UpdateAccountAction.Request req = new UpdateAccountAction.Request();
+        req.rating = 'Hot';
+
+        UpdateAccountAction.Response res = run(req);
+
+        Assert.isFalse(res.success);
+        Assert.isTrue(res.message.contains('which account'), res.message);
+    }
+
+    @IsTest
     static void rejectsNegativeRevenue() {
         UpdateAccountAction.Request req = new UpdateAccountAction.Request();
         req.accountName = 'Test Robotics';

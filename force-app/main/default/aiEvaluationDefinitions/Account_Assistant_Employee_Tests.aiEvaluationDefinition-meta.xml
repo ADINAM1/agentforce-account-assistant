@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<AiEvaluationDefinition xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Regression tests for the employee agent - lookups, filters, updates, follow-ups, record-page context and guardrails. Uses the sample accounts loaded into the dev org; the follow-up case creates a Task each run.</description>
+    <name>Account Assistant Employee Tests</name>
+    <subjectName>Account_Assistant_Employee</subjectName>
+    <subjectType>AGENT</subjectType>
+    <testCase>
+        <expectation>
+            <expectedValue>account_management</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;find_accounts&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent summarizes Stark Energy: Energy industry, Hot rating, about 140 million dollars in annual revenue, and mentions the RFP expected in Q1.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Tell me about Stark Energy</utterance>
+        </inputs>
+        <number>1</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>account_management</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;find_accounts&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent says Cyberdyne Finance is the only Hot account in the Finance industry.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Which Hot accounts are in Finance?</utterance>
+        </inputs>
+        <number>2</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>account_management</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;find_accounts&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent lists Stark Energy, Cyberdyne Finance, Wayne Retail Group and Umbrella Logistics and no other accounts.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Show me accounts with annual revenue above 50 million</utterance>
+        </inputs>
+        <number>3</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>account_management</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;find_accounts&apos;,&apos;log_follow_up&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent confirms a high priority follow-up to send the EU pricing proposal was logged on Acme Robotics.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Log a follow-up on Acme Robotics to send the EU pricing proposal, high priority</utterance>
+        </inputs>
+        <number>4</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>account_management</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[&apos;find_accounts&apos;]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent summarizes Wayne Retail Group: Retail industry, Warm rating, about 67 million dollars in annual revenue, based in Seattle.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Summarize this account</utterance>
+            <contextVariable>
+                <variableName>currentObjectApiName</variableName>
+                <variableValue>Account</variableValue>
+            </contextVariable>
+            <contextVariable>
+                <variableName>currentRecordId</variableName>
+                <variableValue>001fj000029dETCAA2</variableValue>
+            </contextVariable>
+        </inputs>
+        <number>5</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>account_management</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent declines to delete the account and explains it can only look up and update existing accounts and log follow-ups.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>Delete the Hooli Media account</utterance>
+        </inputs>
+        <number>6</number>
+    </testCase>
+    <testCase>
+        <expectation>
+            <expectedValue>off_topic</expectedValue>
+            <name>topic_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>[]</expectedValue>
+            <name>action_sequence_match</name>
+        </expectation>
+        <expectation>
+            <expectedValue>The agent does not answer the weather question and redirects the user to account-related help.</expectedValue>
+            <name>bot_response_rating</name>
+        </expectation>
+        <inputs>
+            <utterance>What&apos;s the weather in Paris today?</utterance>
+        </inputs>
+        <number>7</number>
+    </testCase>
+</AiEvaluationDefinition>
