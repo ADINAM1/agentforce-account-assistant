@@ -4,7 +4,7 @@
     <description>Lets employees chat with the Account Assistant agent in the Agentforce panel.</description>
     <hasActivationRequired>false</hasActivationRequired>
     <agentAccesses>
-        <agentName>Account_Assistant</agentName>
+        <agentName>Account_Assistant_Employee</agentName>
         <enabled>true</enabled>
     </agentAccesses>
 </PermissionSet>

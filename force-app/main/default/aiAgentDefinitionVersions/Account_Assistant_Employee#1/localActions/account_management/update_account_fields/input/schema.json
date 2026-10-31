@@ -1,0 +1,42 @@
+{
+  "required" : [ "accountName" ],
+  "unevaluatedProperties" : false,
+  "properties" : {
+    "accountName" : {
+      "title" : "Account Name",
+      "description" : "The name or part of the name of the Account to update, e.g. Acme Robotics or Acme.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "accountType" : {
+      "title" : "Account Type",
+      "description" : "New Account type, e.g. Prospect, Customer - Direct, Customer - Channel. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "annualRevenue" : {
+      "title" : "Annual Revenue",
+      "description" : "New annual revenue in US dollars as a plain number, e.g. 25000000 for 25M. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__numberType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "industry" : {
+      "title" : "Industry",
+      "description" : "New Industry, e.g. Technology, Finance, Healthcare, Retail, Energy. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    },
+    "rating" : {
+      "title" : "Rating",
+      "description" : "New Account rating. Allowed values: Hot, Warm, Cold. Leave empty to keep the current value.",
+      "lightning:type" : "lightning__textType",
+      "lightning:isPII" : false,
+      "copilotAction:isUserInput" : false
+    }
+  },
+  "lightning:type" : "lightning__objectType"
+}

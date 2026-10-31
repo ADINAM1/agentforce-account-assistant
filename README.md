@@ -1,6 +1,6 @@
 # Agentforce Account Assistant
 
-An Agentforce **employee agent** that lets sales reps update Salesforce Account records through conversation, e.g. *"Change Initech's rating to Warm"*. Built with the new Agentforce Builder and **Agent Script**, managed as source with the Salesforce CLI.
+An Agentforce **employee agent** (`Account_Assistant_Employee`) that lets sales reps update Salesforce Account records through conversation, e.g. *"Change Initech's rating to Warm"*. Built with the new Agentforce Builder and **Agent Script**, managed as source with the Salesforce CLI.
 
 ## How it works
 
@@ -59,3 +59,5 @@ Latest run: topic 100%, action 100%, outcome 100%.
 - A new agent user has no permissions: a silent blank response in Preview was a missing Apex class / Account permission.
 - Asking for confirmation in instructions *and* via `require_user_confirmation` double-prompts; keep the platform guardrail and drop the instruction.
 - Escalation via `@utils.escalate` is reported as topic `human` in agent test results.
+- The Builder's default "New Agent" flow created a **service agent** (`EinsteinServiceAgent`, customer-facing, own agent user, messaging variables), which never appears in the Lightning Agentforce panel. Agent type can't be changed in place, so the employee version was published from a copy of the script with `agent_type: "AgentforceEmployeeAgent"`, no dedicated agent user (employee agents run as the logged-in user) and no live-agent escalation. `Account_Assistant_1` is kept as the service-agent variant.
+- Two separate permission layers: what the agent can do (`Account_Assistant_Agent_Access`, service-agent user) vs. who can talk to it (`Account_Assistant_User`, Agent Access).
