@@ -4,8 +4,9 @@
  *
  * Design notes:
  *  - Runs in USER_MODE, so results respect the user's sharing and field access.
- *  - One match returns a profile (including open opportunities and recent
- *    follow-up tasks); several matches return a compact list.
+ *  - One match returns a profile (including open opportunities, recent
+ *    follow-up tasks and recent changes made through the agent); several
+ *    matches return a compact list.
  *  - Filters are bind variables (Database.queryWithBinds), never concatenated
  *    into the query, and picklist filters are validated against the schema.
  *  - Each request runs its own query because every request carries different
@@ -191,6 +192,7 @@ public with sharing class FindAccountsAction {
         };
         lines.addAll(openOpportunityLines(acc.Id));
         lines.addAll(followUpLines(acc.Id));
+        lines.addAll(changeLogLines(acc.Id));
         return String.join(lines, '\n');
     }
 
@@ -235,6 +237,32 @@ public with sharing class FindAccountsAction {
         for (Task t : tasks) {
             lines.add('- ' + t.Subject + ' | ' + t.Status + ' | ' + t.Priority + ' priority | '
                 + (t.ActivityDate == null ? 'no due date' : 'due ' + t.ActivityDate));
+        }
+        return lines;
+    }
+
+    private static List<String> changeLogLines(Id accountId) {
+        List<Agent_Change_Log__c> entries;
+        try {
+            entries = [SELECT Name, toLabel(Field__c), Old_Value__c, New_Value__c, Status__c,
+                           CreatedBy.Name, CreatedDate, Reviewed_By__r.Name
+                       FROM Agent_Change_Log__c
+                       WHERE Account__c = :accountId
+                       WITH USER_MODE
+                       ORDER BY CreatedDate DESC, Name DESC
+                       LIMIT 5];
+        } catch (QueryException e) {
+            return new List<String>{ 'Recent changes through Account Assistant: not available to you' };
+        }
+        if (entries.isEmpty()) {
+            return new List<String>{ 'Recent changes through Account Assistant: none' };
+        }
+        List<String> lines = new List<String>{ 'Recent changes through Account Assistant (newest first):' };
+        for (Agent_Change_Log__c entry : entries) {
+            lines.add('- ' + entry.Name + ' | ' + entry.Field__c + ': ' + valueOrDash(entry.Old_Value__c) + ' → '
+                + entry.New_Value__c + ' | ' + entry.Status__c + ' | requested by ' + entry.CreatedBy.Name
+                + ' on ' + entry.CreatedDate.date()
+                + (entry.Reviewed_By__c == null ? '' : ' | reviewed by ' + entry.Reviewed_By__r.Name));
         }
         return lines;
     }

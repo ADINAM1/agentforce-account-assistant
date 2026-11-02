@@ -9,7 +9,7 @@ config:
     developer_name: "Account_Assistant_Employee"
     agent_type: "AgentforceEmployeeAgent"
     agent_label: "Account Assistant (Employee)"
-    description: "Internal assistant that helps sales reps find, summarize and update Account records (Rating, Industry, Type, Annual Revenue) and log follow-up tasks. Confirms before changing records and never creates or deletes accounts."
+    description: "Internal assistant that helps sales reps find, summarize and update Account records (Rating, Industry, Type, Annual Revenue) and log follow-up tasks. Confirms before changing records, records every change in a change log, sends revenue changes involving more than $100M to the user's manager for approval, and never creates or deletes accounts."
 
 language:
     default_locale: "en_US"
@@ -42,7 +42,7 @@ start_agent agent_router:
                 | The user is viewing an Account record, so requests about "this account", "this one" or "it" are account requests.
         actions:
             go_to_account_management: @utils.transition to @subagent.account_management
-                description: "Use for any request about Accounts: looking up or summarizing an account, finding or listing accounts by criteria, changing an account's Rating, Industry, Type or Annual Revenue, or logging a follow-up, note, call or reminder on an account."
+                description: "Use for any request about Accounts: looking up or summarizing an account, finding or listing accounts by criteria, changing an account's Rating, Industry, Type or Annual Revenue, logging a follow-up, note, call or reminder on an account, or asking what changed on an account or whether a change was approved."
             go_to_off_topic: @utils.transition to @subagent.off_topic
             go_to_ambiguous_question: @utils.transition to @subagent.ambiguous_question
 
@@ -91,11 +91,11 @@ subagent ambiguous_question:
 
 subagent account_management:
     label: "Account Management"
-    description: "Looks up, summarizes and searches Accounts, updates an Account's Rating, Industry, Type or Annual Revenue, and logs follow-up tasks on Accounts."
+    description: "Looks up, summarizes and searches Accounts, updates an Account's Rating, Industry, Type or Annual Revenue (with a change log and manager approval for big revenue changes), and logs follow-up tasks on Accounts."
     actions:
         find_accounts:
             label: "Find Accounts"
-            description: "Finds Accounts by Id or name and/or by Rating, Industry, Type, billing state or annual revenue range. Returns a profile (including open opportunities and recent follow-ups) when one account matches, or a list when several match."
+            description: "Finds Accounts by Id or name and/or by Rating, Industry, Type, billing state or annual revenue range. Returns a profile (including open opportunities, recent follow-ups and recent changes made through Account Assistant with their approval status) when one account matches, or a list when several match."
             include_in_progress_indicator: True
             progress_indicator_message: "Looking up accounts..."
             inputs:
@@ -145,7 +145,7 @@ subagent account_management:
             target: "apex://FindAccountsAction"
         update_account_fields:
             label: "Update Account Fields"
-            description: "Updates the Rating, Industry, Type and/or Annual Revenue of a single existing Account identified by its Id."
+            description: "Updates the Rating, Industry, Type and/or Annual Revenue of a single existing Account identified by its Id, and records the change in the change log. Revenue changes involving more than $100M are sent to the user's manager for approval instead of being applied."
             require_user_confirmation: True
             inputs:
                 accountId: string
@@ -168,11 +168,17 @@ subagent account_management:
                     label: "New Annual Revenue"
                     description: "New annual revenue in US dollars as a plain number, e.g. 25000000 for 25M. Leave empty to keep the current value."
                     is_required: False
+                originalRequest: string
+                    label: "Original Request"
+                    description: "The user's request that led to this change, in their own words, e.g. Make this one Hot. Saved to the change log; it is not a field to change."
+                    is_required: True
             outputs:
                 success: boolean
-                    description: "True if the Account was updated."
+                    description: "True if the changes were made or sent for approval."
+                pendingApproval: boolean
+                    description: "True if a change was sent to the user's manager for approval and is not applied yet."
                 message: string
-                    description: "Result to relay to the user, including what changed or why nothing changed."
+                    description: "Result to relay to the user: what changed, what is waiting for approval, or why nothing changed."
                 accountId: id
                     description: "Id of the updated Account, if exactly one matched."
             target: "apex://UpdateAccountAction"
@@ -217,7 +223,9 @@ subagent account_management:
               For a single account ("tell me about Acme"), give a short overview: industry, type, rating, revenue, location, what the notes say, open opportunities and the latest follow-ups.
               For questions about several accounts ("which Hot accounts are in Finance?"), pass the criteria as filters to {!@actions.find_accounts} and answer with a short list.
               Updates and follow-ups need the account's Id. Use the Id of the account the user is viewing; otherwise call {!@actions.find_accounts} with the account name first and use the accountId it returns when exactly one account matches. If several match, ask which one the user meant before doing anything else.
-              To change Rating, Industry, Type or Annual Revenue, call {!@actions.update_account} with the accountId and only the fields that change. The platform shows the user a confirmation card before it runs, so do not ask for confirmation yourself.
+              To change Rating, Industry, Type or Annual Revenue, call {!@actions.update_account} with the accountId, only the fields that change, and the user's request in their own words as originalRequest. The platform shows the user a confirmation card before it runs, so do not ask for confirmation yourself.
+              Every change is recorded in the change log. Revenue changes involving more than $100M (before or after the change) need the user's manager's approval, so the action submits them instead of applying them. When pendingApproval is true, tell the user who it was sent to and that it is not applied until approved; never say it was updated.
+              To answer what changed on an account, who changed it, or whether a change was approved, call {!@actions.find_accounts} for that account and answer from its recent changes.
               To log a follow-up, reminder, call, email or note, call {!@actions.log_follow_up} with the accountId. Convert relative due dates such as "next Friday" to a calendar date.
               If an action reports that several accounts match, list them and ask which one the user meant.
               Never invent field values. If a value is rejected, show the user the allowed values from the action's message.
@@ -240,6 +248,7 @@ subagent account_management:
                 with industry = ...
                 with accountType = ...
                 with annualRevenue = ...
+                with originalRequest = ...
             log_follow_up: @actions.log_follow_up
                 with accountId = ...
                 with subject = ...

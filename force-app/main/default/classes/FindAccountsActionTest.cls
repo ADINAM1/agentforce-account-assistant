@@ -37,6 +37,19 @@ private class FindAccountsActionTest {
     }
 
     @IsTest
+    static void profileIncludesRecentAgentChanges() {
+        Account polaris = [SELECT Id FROM Account WHERE Name = 'Polaris Bank'];
+        insert new Agent_Change_Log__c(Account__c = polaris.Id, Field__c = 'Rating', Old_Value__c = 'Cold',
+            New_Value__c = 'Warm', Status__c = 'Applied', Original_Request__c = 'Make Polaris Warm');
+        FindAccountsAction.Request req = new FindAccountsAction.Request();
+        req.accountId = polaris.Id;
+
+        FindAccountsAction.Response res = run(req);
+
+        Assert.isTrue(res.summary.contains('Rating: Cold → Warm | Applied | requested by ' + UserInfo.getName()), res.summary);
+    }
+
+    @IsTest
     static void prefersExactNameOverPartialMatches() {
         FindAccountsAction.Request req = new FindAccountsAction.Request();
         req.accountName = 'orion';
